@@ -11,12 +11,11 @@
 <h1 style="font-family: Consolas">WGo.js Player demo</h1>
 
 <select id="tool" style="display: block; margin-bottom: 10px;">
-  	<option value="black" selected>Black stone</option>
-  	<option value="white">White stone</option>
+  	<option value="play" selected>jouer</option>
+  	<option value="debug">Debug</option>
   	<option value="SQ">Square</option>
   	<option value="TR">Triangle</option>
   	<option value="CR">Circle</option>
-  	<option value="remove">Remove</option>
 </select>
 
 <div id="board"></div>
@@ -27,6 +26,8 @@
 	//Effectivement il n'y a pas de lettre I c'est normal
 
 	numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19];
+
+	var isP1Turn = true;
 
 	var board = new WGo.Board(document.getElementById("board"), {
 	width: 600
@@ -48,20 +49,23 @@
 	    var tool = document.getElementById("tool"); // get the <select> element
 
 		board.addEventListener("click", function(x, y) {
-	    	if(tool.value == "black") {
+	    	if(tool.value == "play" && isP1Turn) {
 	        	var numbers2 = Array.from(numbers);
 	        	numbers2.reverse();
 	       		var gnuY = numbers2[y];
 	       		var gnuX = lettres[x];
 
-	        	result = game.play(x, y);
+	       		getNearStone(x, y);
+
+	        	result = game.play(x, y, WGo.B);
 	        	if (result instanceof Array) {
+	        		isP1Turn = false;
 	        		console.log("OK")
 	        		console.log(result)
 	        		board.addObject({
 	            		x: x,
 	            		y: y,
-	            		c: -game.turn
+	            		c: WGo.B
 	        		});
 	        	}
 
@@ -70,18 +74,22 @@
 	        			board.removeObjectsAt(result[i].x, result[i].y);
 	        		}
 	        	}
+	        	if (result instanceof Array) {
+	        		console.log('play black ' + gnuX + "" + gnuY);
+	        		socket.send('play black ' + gnuX + "" + gnuY);
+	        	}
+
+
 	        	//console.log(game.addStone(x,y, 1))
 	    	}
-	    	else if(tool.value == "white") {
+	    	else if(tool.value == "debug") {
 	        	// board.addObject({
 	         //    	x: x,
 	         //    	y: y,
 	         //    	c: WGo.W
 	        	// });
 	        	console.log(game.getStone(x, y))
-	    	}
-	    	else if(tool.value == "remove") {
-	        	board.removeObjectsAt(x, y);
+	        	socket.send("showboard");
 	    	}
 	    	else {
 	        	board.addObject({
@@ -127,9 +135,56 @@
 		}
 		board.addCustomObject(coordinates);
 	} 
-	socket.onmessage = function(e){console.log(e)}
+	socket.onmessage = function(e){
+		console.log(e);
+		if (e.data.replace(/\s/g,'') != "=") {
+			$dataRaw = e.data.replace(/\s/g,'');
+			$data = $dataRaw.substr(1);
+
+			var gnuY = $data.substr(1)
+
+			var numbers2 = Array.from(numbers);
+	        numbers2.reverse();
+	       	var wgoY = numbers2[gnuY];
+
+	       	console.log(wgoY)
+
+	       	var gnuX = $data.substr(0,1);
+
+	       	for (var i = 0; i < lettres.length; i++) {
+	       		if (lettres[i] == gnuX) {
+	       			var result = game.play(i, wgoY, WGo.W);
+		        	if (result instanceof Array) {
+		        		console.log("OK")
+		        		console.log(result)
+		        		board.addObject({
+		            		x: i,
+		            		y: wgoY,
+		            		c: WGo.W
+		        		});
+		        	}
+
+		        	if (result.length > 0) {
+		        		for (var i = 0; i < result.length; i++) {
+		        			board.removeObjectsAt(result[i].x, result[i].y);
+		        		}
+		        	}
+
+		        	isP1Turn = true;
+	       		}
+	       	}
+
+		} else {
+			socket.send('genmove white');
+		}
+	}
 	socket.onclose = function(e){}
 	socket.onerror = function(e){console.error(e)}
+
+	function getNearStone(x, y) {
+		console.log(game.getStone(x+1, y) + '' + game.getStone(x-1, y));
+		console.log(game.getStone(x, y+1) + '' + game.getStone(x, y-1));
+	}
 
 </script>
 </body>
