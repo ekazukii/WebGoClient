@@ -2,6 +2,15 @@
 <html>
 <head>
 	<title></title>
+	<style type="text/css">
+		th {
+			width: 20px;
+		}
+
+		td {
+			padding-left: 10px;
+		}
+	</style>
 </head>
 <body>
 <script type="text/javascript" src="lib/jquery.js"></script>
@@ -96,7 +105,7 @@
 	lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
 	for (var i = 0; i < 20; i++) {
 		for (var j = lettres.length; j > 0; j--) {
-			$("#" + i).after('<td id="'+ i + lettres[j-1] + '">*</td>')
+			$("#" + i).after('<td id="'+ i + lettres[j-1] + '">.</td>')
 		}
 	}
 
