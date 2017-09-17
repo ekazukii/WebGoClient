@@ -12,7 +12,7 @@ socket.onmessage = function(e){
 
        	for (var i = 0; i < lettres.length; i++) {
        		if (lettres[i] == gnuX) {
-       			var result = game.play(i, wgoY, WGo.W);
+       			var result = game.play(i, wgoY, game.turn);
        			if (isDebugMode) {
        				console.log(e.data.replace(/\s/g,''))
         			console.log(result)
@@ -22,7 +22,7 @@ socket.onmessage = function(e){
 	        		board.addObject({
 	            		x: i,
 	            		y: wgoY,
-	            		c: WGo.W
+	            		c: -game.turn
 	        		});
 	        	}
 
@@ -31,8 +31,15 @@ socket.onmessage = function(e){
 	        			board.removeObjectsAt(result[i].x, result[i].y);
 	        		}
 	        	}
-
-	        	isP1Turn = true;
+	        	if (type == "iavia") {
+	        		if (game.turn == 1) {
+	        			genmove("black") 
+	        		} else {
+	        			genmove("white")
+	        		}
+	        	} else {
+	        		isP1Turn = true;
+	        	}
        		}
        	}
 
@@ -41,7 +48,7 @@ socket.onmessage = function(e){
 	}
 };
 
-socket.onopen  = function(e){start()};
+socket.onopen  = function(e){socketOk = true;};
 socket.onclose = function(e){}
 socket.onerror = function(e){console.error(e)}
 
@@ -54,4 +61,11 @@ function play(color, x, y) {
 		console.log('play '+ color + " " + x + "" + y);
 	}
 	socket.send('play '+ color + " " + x + "" + y);
+}
+
+function genmove(color) {
+	if (isDebugMode) {
+		console.log('genmove '+color);
+	}
+	socket.send('genmove '+color);
 }

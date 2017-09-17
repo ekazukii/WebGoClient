@@ -1,23 +1,6 @@
 #!/php -q
 <?php  
 
-
-// if (is_resource($process)) {
-
-// 	fwrite($pipes[0], 'genmove white'); 
-// 	fclose($pipes[0]);
-
-// 	echo stream_get_contents($pipes[1]);
-// 	fclose($pipes[1]);
-
-// 	// It is important that you close any pipes before calling
-// 	// proc_close in order to avoid a deadlock
-// 	proc_close($process);
-// }
-
-// Run from command prompt > php -q chatbot.demo.php
-// 
-
 include "websocket.class.php";
 // Extended basic WebSocket as ChatBot
 class GnuBot extends WebSocket{
